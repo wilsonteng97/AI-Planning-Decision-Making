@@ -1,0 +1,4 @@
+{
+	"name": "CS4246 ENV",
+	"dockerFile": "Dockerfile"
+}
