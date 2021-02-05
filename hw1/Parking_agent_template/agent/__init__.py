@@ -241,7 +241,7 @@ class GeneratePDDL_Stationary :
         goal_x = self.state.finish_position.x
         goal_y = self.state.finish_position.y
 
-        return f'(at pt-{goal_x}-{goal_y} agent1)'
+        return f'(at pt{goal_x}pt{goal_y} agent1)'
 
 
 
