@@ -236,8 +236,12 @@ class GeneratePDDL_Stationary :
         Example: The following statement adds goal string from https://github.com/pellierd/pddl4j/blob/master/pddl/logistics/p01.pddl  
 
         return "(and (at obj11 apt1) (at obj23 pos1) (at obj13 apt1) (at obj21 pos1)))"
-        '''    
-        return ''
+        '''
+
+        goal_x = self.state.finish_position.x
+        goal_y = self.state.finish_position.y
+
+        return f'(at pt-{goal_x}-{goal_y} agent1)'
 
 
 
