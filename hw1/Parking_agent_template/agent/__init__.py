@@ -1,4 +1,4 @@
-SUBMISSION = True #Set this to true for submission. Set it to False if testing on your machine.
+SUBMISSION = False #Set this to true for submission. Set it to False if testing on your machine.
 
 import gym
 import gym_grid_driving
