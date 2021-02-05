@@ -219,7 +219,28 @@ class GeneratePDDL_Stationary :
         return "(at apn1 apt2) (at tru1 pos1) (at obj11 pos1) (at obj12 pos1) (at obj13 pos1) (at tru2 pos2) (at obj21 pos2) (at obj22 pos2)
                 (at obj23 pos2) (in-city pos1 cit1) (in-city apt1 cit1) (in-city pos2 cit2) (in-city apt2 cit2)" 
         '''  
-        return ''
+        state = self.state
+        start_x = state.agent.position.x
+        start_y = state.agent.position.y
+     
+        car_str = ""
+        for car in state.cars:
+            car_pos = f"pt{car.position.x}pt{car.position.y}"
+            car_str += f"(at {car_pos} car{car.id}) "
+            car_str += f"(blocked {car_pos}) "
+
+        # FIXME Listed in question prompt but not used yet #
+        width = self.width
+        num_lanes = self.num_lanes
+
+        gridcell_objs = ""
+        for obj in self.grid_cell_list:
+            pass
+        # end of FIXME #
+
+        init_str = f'(at pt-{start_x}-{start_y} agent1) {car_str} {gridcell_objs}'
+
+        return init_str.rstrip()
 
 
     def generateGoalString(self) :
