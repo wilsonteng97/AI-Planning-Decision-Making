@@ -224,29 +224,21 @@ class GeneratePDDL_Stationary :
         agent = 'agent1'
         agent_str = f'(at pt{start_x}pt{start_y} {agent})'
 
-        block_set = set()
         car_str = ''
         for car in self.state.cars:
             car_pos = f'pt{car.position.x}pt{car.position.y}'
             car_str += f'(at {car_pos} car{car.id}) '
             car_str += f'(blocked {car_pos}) '
-            block_set.add(car_pos)
 
         move_str = ''
         for w in range(self.width):
             for lane in range(self.num_lanes):
                 if w < self.width:
-                    # whether movement from Point(w+1, lane) to Point(w, lane) is feasible
-                    if f'pt{w}pt{lane}' not in block_set and f'pt{w+1}pt{lane}' not in block_set:
-                        move_str += f'(forward_next pt{w+1}pt{lane} pt{w}pt{lane}) '
+                    move_str += f'(forward_next pt{w+1}pt{lane} pt{w}pt{lane}) '
                 if w < self.width and lane < self.num_lanes:
-                    # whether movement from Point(w+1, lane+1) to Point(w, lane) is feasible
-                    if f'pt{w}pt{lane}' not in block_set and f'pt{w+1}pt{lane+1}' not in block_set:
-                        move_str += f'(up_next pt{w+1}pt{lane+1} pt{w}pt{lane}) '
+                    move_str += f'(up_next pt{w+1}pt{lane+1} pt{w}pt{lane}) '
                 if w < self.width and lane > 0:
-                    # whether movement from Point(w+1, lane-1) to Point(w, lane) is feasible
-                    if f'pt{w}pt{lane}' not in block_set and f'pt{w+1}pt{lane-1}' not in block_set:
-                        move_str += f'(down_next pt{w+1}pt{lane-1} pt{w}pt{lane}) '
+                    move_str += f'(down_next pt{w+1}pt{lane-1} pt{w}pt{lane}) '
 
         car_str = car_str.rstrip()
         move_str = move_str.rstrip()
