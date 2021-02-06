@@ -233,11 +233,11 @@ class GeneratePDDL_Stationary :
         move_str = ''
         for w in range(self.width):
             for lane in range(self.num_lanes):
-                if w < self.width:
+                if w < self.width - 1:
                     move_str += f'(forward_next pt{w+1}pt{lane} pt{w}pt{lane}) '
-                if w < self.width and lane < self.num_lanes:
+                if w < self.width - 1 and lane < self.num_lanes - 1:
                     move_str += f'(up_next pt{w+1}pt{lane+1} pt{w}pt{lane}) '
-                if w < self.width and lane > 0:
+                if w < self.width - 1 and lane > 0:
                     move_str += f'(down_next pt{w+1}pt{lane-1} pt{w}pt{lane}) '
 
         car_str = car_str.rstrip()
