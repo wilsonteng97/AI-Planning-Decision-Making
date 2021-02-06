@@ -219,7 +219,32 @@ class GeneratePDDL_Stationary :
         return "(at apn1 apt2) (at tru1 pos1) (at obj11 pos1) (at obj12 pos1) (at obj13 pos1) (at tru2 pos2) (at obj21 pos2) (at obj22 pos2)
                 (at obj23 pos2) (in-city pos1 cit1) (in-city apt1 cit1) (in-city pos2 cit2) (in-city apt2 cit2)" 
         '''  
-        return ''
+        start_x = self.state.agent.position.x
+        start_y = self.state.agent.position.y
+        agent = 'agent1'
+        agent_str = f'(at pt{start_x}pt{start_y} {agent})'
+
+        car_str = ''
+        for car in self.state.cars:
+            car_pos = f'pt{car.position.x}pt{car.position.y}'
+            car_str += f'(at {car_pos} car{car.id}) '
+            car_str += f'(blocked {car_pos}) '
+
+        move_str = ''
+        for w in range(self.width):
+            for lane in range(self.num_lanes):
+                if w < self.width - 1:
+                    move_str += f'(forward_next pt{w+1}pt{lane} pt{w}pt{lane}) '
+                if w < self.width - 1 and lane < self.num_lanes - 1:
+                    move_str += f'(up_next pt{w+1}pt{lane+1} pt{w}pt{lane}) '
+                if w < self.width - 1 and lane > 0:
+                    move_str += f'(down_next pt{w+1}pt{lane-1} pt{w}pt{lane}) '
+
+        car_str = car_str.rstrip()
+        move_str = move_str.rstrip()
+
+        init_str = f'{agent_str} {car_str} {move_str}'
+        return init_str
 
 
     def generateGoalString(self) :
