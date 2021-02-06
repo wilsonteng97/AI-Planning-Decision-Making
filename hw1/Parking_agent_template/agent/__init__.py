@@ -309,20 +309,20 @@ def generateDomainPDDLFile(gen):
     '''
     gen.addAction(name="UP", 
                   parameters=(("pt1" , "gridcell"), ("pt2" , "gridcell"), ("agt", "agent")), 
-                  precondition_string="(and (at ?pt1 ?agt) (not (blocked pt2)))", 
-                  effect_string= "(and (not (at ?pt1 ?agt)) (at ?pt2 ?agt) (up_next ?pt1 ?pt2))")
+                  precondition_string="(and (at ?pt1 ?agt) (not (blocked ?pt2)) (up_next ?pt1 ?pt2))", 
+                  effect_string= "(and (not (at ?pt1 ?agt)) (at ?pt2 ?agt))")
     
     gen.addAction(name="DOWN", 
                   parameters=(("pt1" , "gridcell"), ("pt2" , "gridcell"), ("agt", "agent")), 
-                  precondition_string="(and (at ?pt1 ?agt) (not (blocked pt2)))", 
-                  effect_string= "(and (not (at ?pt1 ?agt)) (at ?pt2 ?agt) (down_next ?pt1 ?pt2))")
+                  precondition_string="(and (at ?pt1 ?agt) (not (blocked ?pt2)) (down_next ?pt1 ?pt2))", 
+                  effect_string= "(and (not (at ?pt1 ?agt)) (at ?pt2 ?agt))")
 
     gen.addAction(name="FORWARD", 
                   parameters=(("pt1" , "gridcell"), ("pt2" , "gridcell"), ("agt", "agent")), 
-                  precondition_string="(and (at ?pt1 ?agt) (not (blocked pt2)))", 
-                  effect_string= "(and (not (at ?pt1 ?agt)) (at ?pt2 ?agt) (foward_next ?pt1 ?pt2))")
+                  precondition_string="(and (at ?pt1 ?agt) (not (blocked ?pt2)) (forward_next ?pt1 ?pt2))", 
+                  effect_string= "(and (not (at ?pt1 ?agt)) (at ?pt2 ?agt))")
 
-    pass
+    gen.generateDomainPDDL()
 
 def generateProblemPDDLFile(gen):
     '''
