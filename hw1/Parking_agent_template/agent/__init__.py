@@ -320,7 +320,7 @@ def generateDomainPDDLFile(gen):
     gen.addAction(name="FORWARD", 
                   parameters=(("pt1" , "gridcell"), ("pt2" , "gridcell"), ("agt", "agent")), 
                   precondition_string="(and (at ?pt1 ?agt) (not (blocked pt2)))", 
-                  effect_string= "(and (not (at ?pt1 ?agt)) (at ?pt2 ?agt) (foward_next ?pt1 ?pt2))")
+                  effect_string= "(and (not (at ?pt1 ?agt)) (at ?pt2 ?agt) (forward_next ?pt1 ?pt2))")
 
     pass
 
