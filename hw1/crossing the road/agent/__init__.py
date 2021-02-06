@@ -14,16 +14,28 @@ PDDL_FILE_ABSOLUTE_PATH = ""
 ##########################################################
 
 ### Sample test cases for Parking task. 
-test_config = [{'lanes' : [LaneSpec(2, [0, 0])] *3,'width' :5, 'seed' : 13},
-               {'lanes' : [LaneSpec(2, [0, 0])] *3,'width' :5, 'seed' : 10},
-               {'lanes' : [LaneSpec(3, [0, 0])] *4,'width' :10, 'seed' : 25},
-               {'lanes' : [LaneSpec(4, [0, 0])] *4,'width' :10, 'seed' : 25},
-               {'lanes' : [LaneSpec(8, [0, 0])] *7,'width' :20, 'seed' : 25},
-               {'lanes' : [LaneSpec(7, [0, 0])] *10,'width' :20, 'seed' : 125}]
+# test_config = [{'lanes' : [LaneSpec(2, [0, 0])] *3,'width' :5, 'seed' : 13},
+#                {'lanes' : [LaneSpec(2, [0, 0])] *3,'width' :5, 'seed' : 10},
+#                {'lanes' : [LaneSpec(3, [0, 0])] *4,'width' :10, 'seed' : 25},
+#                {'lanes' : [LaneSpec(4, [0, 0])] *4,'width' :10, 'seed' : 25},
+#                {'lanes' : [LaneSpec(8, [0, 0])] *7,'width' :20, 'seed' : 25},
+#                {'lanes' : [LaneSpec(7, [0, 0])] *10,'width' :20, 'seed' : 125}]
 
 ### Sample test cases for Crossing Task
-# test_config = [{'lanes' : [LaneSpec(6, [-2, -2])] *2 + [LaneSpec(6, [-5, -5])] *2 +
-#                           [LaneSpec(5, [-4, -4])] *2 + [LaneSpec(5, [-2, -2])] *1, 'width' :30, 'seed' : 101}]
+"""
+[
+    LaneSpec(cars=6, speed_range=[-2, -2]), # 6 cars in lane 1 with speed -2
+    LaneSpec(cars=6, speed_range=[-2, -2]), # 6 cars in lane 2 with speed -2
+    LaneSpec(cars=6, speed_range=[-5, -5]), # 6 cars in lane 3 with speed -5
+    LaneSpec(cars=6, speed_range=[-5, -5]), # 6 cars in lane 4 with speed -5
+    LaneSpec(cars=5, speed_range=[-4, -4]), # 5 cars in lane 5 with speed -4
+    LaneSpec(cars=5, speed_range=[-4, -4]), # 5 cars in lane 6 with speed -4
+    LaneSpec(cars=5, speed_range=[-2, -2])  # 5 cars in lane 7 with speed -2
+]
+"""
+test_config = [{'lanes' : [LaneSpec(6, [-2, -2])] *2 + [LaneSpec(6, [-5, -5])] *2 + [LaneSpec(5, [-4, -4])] *2 + [LaneSpec(5, [-2, -2])] *1, 
+                'width' :30, 
+                'seed' : 101}]
 
 
 test_case_number = 0 # Change the index for a different test case
