@@ -219,28 +219,40 @@ class GeneratePDDL_Stationary :
         return "(at apn1 apt2) (at tru1 pos1) (at obj11 pos1) (at obj12 pos1) (at obj13 pos1) (at tru2 pos2) (at obj21 pos2) (at obj22 pos2)
                 (at obj23 pos2) (in-city pos1 cit1) (in-city apt1 cit1) (in-city pos2 cit2) (in-city apt2 cit2)" 
         '''  
-        state = self.state
-        start_x = state.agent.position.x
-        start_y = state.agent.position.y
-     
-        car_str = ""
-        for car in state.cars:
-            car_pos = f"pt{car.position.x}pt{car.position.y}"
-            car_str += f"(at {car_pos} car{car.id}) "
-            car_str += f"(blocked {car_pos}) "
+        start_x = self.state.agent.position.x
+        start_y = self.state.agent.position.y
+        agent = 'agent1'
+        agent_str = f'(at pt{start_x}pt{start_y} {agent})'
 
-        # FIXME Listed in question prompt but not used yet #
-        width = self.width
-        num_lanes = self.num_lanes
+        block_set = set()
+        car_str = ''
+        for car in self.state.cars:
+            car_pos = f'pt{car.position.x}pt{car.position.y}'
+            car_str += f'(at {car_pos} car{car.id}) '
+            car_str += f'(blocked {car_pos}) '
+            block_set.add(car_pos)
 
-        gridcell_objs = ""
-        for obj in self.grid_cell_list:
-            pass
-        # end of FIXME #
+        move_str = ''
+        for w in range(self.width):
+            for lane in range(self.num_lanes):
+                if w < self.width:
+                    # whether movement from Point(w+1, lane) to Point(w, lane) is feasible
+                    if f'pt{w}pt{lane}' not in block_set and f'pt{w+1}pt{lane}' not in block_set:
+                        move_str += f'(forward_next pt{w+1}pt{lane} pt{w}pt{lane}) '
+                if w < self.width and lane < self.num_lanes:
+                    # whether movement from Point(w+1, lane+1) to Point(w, lane) is feasible
+                    if f'pt{w}pt{lane}' not in block_set and f'pt{w+1}pt{lane+1}' not in block_set:
+                        move_str += f'(up_next pt{w+1}pt{lane+1} pt{w}pt{lane}) '
+                if w < self.width and lane > 0:
+                    # whether movement from Point(w+1, lane-1) to Point(w, lane) is feasible
+                    if f'pt{w}pt{lane}' not in block_set and f'pt{w+1}pt{lane-1}' not in block_set:
+                        move_str += f'(down_next pt{w+1}pt{lane-1} pt{w}pt{lane}) '
 
-        init_str = f'(at pt-{start_x}-{start_y} agent1) {car_str} {gridcell_objs}'
+        car_str = car_str.rstrip()
+        move_str = move_str.rstrip()
 
-        return init_str.rstrip()
+        init_str = f'{agent_str} {car_str} {move_str}'
+        return init_str
 
 
     def generateGoalString(self) :
