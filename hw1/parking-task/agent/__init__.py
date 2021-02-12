@@ -245,9 +245,16 @@ class GeneratePDDL_Stationary :
                     down_str += f'(down_next pt{w+1}pt{lane-1} pt{w}pt{lane}) '
         move_str = f'{forward_str.rstrip()} \n{up_str.rstrip()} \n{down_str.rstrip()}'
 
-        wrap_str = ''
+        forward_wrap_str = ''
+        up_wrap_str = ''
+        down_wrap_str = ''
         for lane in range(self.num_lanes):
-            wrap_str += f'(forward_next pt0pt{lane} pt{self.width - 1}pt{lane}) '
+            forward_wrap_str += f'(forward_next pt0pt{lane} pt{self.width-1}pt{lane}) '
+            if  lane < self.num_lanes - 1:
+                up_wrap_str += f'(up_next pt0pt{lane+1} pt{self.width-1}pt{lane}) '
+            if lane > 0:
+                down_wrap_str += f'(down_next pt0pt{lane-1} pt{self.width-1}pt{lane}) '
+        wrap_str = f'{forward_wrap_str.rstrip()} \n{up_wrap_str.rstrip()} \n{down_wrap_str.rstrip()}'
 
         car_str = car_str.rstrip()
         move_str = move_str.rstrip()
