@@ -224,11 +224,13 @@ class GeneratePDDL_Stationary :
         agent = 'agent1'
         agent_str = f'(at pt{start_x}pt{start_y} {agent})'
 
-        car_str = ''
+        at_str = ''
+        blocked_str = ''
         for car in self.state.cars:
             car_pos = f'pt{car.position.x}pt{car.position.y}'
-            car_str += f'(at {car_pos} car{car.id}) '
-            car_str += f'(blocked {car_pos}) '
+            at_str += f'(at {car_pos} car{car.id}) '
+            blocked_str += f'(blocked {car_pos}) '
+        car_str = f'{at_str.rstrip()} \n{blocked_str.rstrip()}'
 
         forward_str = ''
         up_str = ''
