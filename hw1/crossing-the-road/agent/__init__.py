@@ -33,9 +33,25 @@ PDDL_FILE_ABSOLUTE_PATH = ""
     LaneSpec(cars=5, speed_range=[-2, -2])  # 5 cars in lane 7 with speed -2
 ]
 """
-test_config = [{'lanes' : [LaneSpec(6, [-2, -2])] *2 + [LaneSpec(6, [-5, -5])] *2 + [LaneSpec(5, [-4, -4])] *2 + [LaneSpec(5, [-2, -2])] *1, 
-                'width' :30, 
-                'seed' : 101}]
+test_config = [{'lanes': [LaneSpec(6, [-2, -2])] *2 + [LaneSpec(6, [-5, -5])] *2 + [LaneSpec(5, [-4, -4])] *2 + [LaneSpec(5, [-2, -2])] *1, 
+                'width': 30, 
+                'seed': 101},
+               {'lanes': [LaneSpec(3, [-1, -1])] *3,
+                'width': 5, 
+                'seed': 12},
+               {'lanes': [LaneSpec(2, [-1, -1])] *3,
+                'width': 5, 
+                'seed': 25},
+               {'lanes': [LaneSpec(3, [-1, -1])] *4,
+                'width': 10, 
+                'seed': 125},
+               {'lanes': [LaneSpec(6, [-2, -2])] *2 + [LaneSpec(6, [-5, -5])] *2 + [LaneSpec(5, [-4, -4])] *2 + [LaneSpec(5, [-2, -2])] *1, 
+                'width': 30, 
+                'seed': 101},
+               {'lanes': [LaneSpec(7, [-3, -3])] *2 + [LaneSpec(6, [-4, -4])] *2 + [LaneSpec(6, [-4, -4])] *2 + [LaneSpec(6, [-3, -3])] *2 + [LaneSpec(5, [-2, -2])] *2 + [LaneSpec(5, [-3, -3])] *2, 
+                'width': 35, 
+                'seed': 40}
+              ]
 
 
 test_case_number = 0 # Change the index for a different test case
@@ -398,7 +414,7 @@ def generateDomainPDDLFile(gen):
                   effect_string= "(and (not (at ?pkg ?loc)) (in ?pkg ?truck))")
     '''
     # Problem: Can only change actions of agent, not cars.
-    
+
     gen.addAction(name="UP", 
                   parameters=(("pt1" , "gridcell"), ("pt2" , "gridcell"), ("agt", "agent"), ("t1", "time"), ("t2", "time")), 
                   precondition_string="(and (at ?pt1 ?agt) (at_time ?t1 ?agt) (not (blocked ?pt2 ?t2)) (next_time ?t1 ?t2) (up_next ?pt1 ?pt2 ?t2))", 
