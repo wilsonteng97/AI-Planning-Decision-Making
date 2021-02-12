@@ -248,9 +248,10 @@ class GeneratePDDL_Stationary :
             next_time += f'(next_time t{time} t{time + 1}) '
 
         next_time = next_time.rstrip()
-        agent_str = f'{at_pos} {at_time} {next_time}'
+        agent_str = f'{at_pos} \n{at_time} \n{next_time}'
 
-        car_str = ''
+        trail_str = ''
+        blocked_str = ''
         # car status at t0 is of no interest, so we start with t1
         for t in range(1, TIME_LIMIT + 1):
             for car in self.state.cars:
@@ -262,35 +263,43 @@ class GeneratePDDL_Stationary :
                 # block occupancy trails
                 for s in range(1, abs(lane_speed)):
                     trail_x = (wrapped_x + s) % self.width
-                    car_str += f'(blocked pt{trail_x}pt{car_lane} t{t})'
-                
+                    trail_str += f'(blocked pt{trail_x}pt{car_lane} t{t})'
+
                 car_pos = f'pt{wrapped_x}pt{car_lane}'
                 # car_str += f'(at_time t{t} car{car.id}) '
                 # block current car position at time t
-                car_str += f'(blocked {car_pos} t{t}) '
+                blocked_str += f'(blocked {car_pos} t{t}) '
+            trail_str += '\n'
+            blocked_str += '\n'
+        car_str = f'{trail_str.rstrip()} \n{blocked_str.rstrip()}'
+        
 
-        move_str = ''
+        up_str = ''
+        down_str = ''
+        forward_str = ''
         for t in range(1, TIME_LIMIT + 1):
             for w in range(self.width):
                 for lane in range(self.num_lanes):
                     # consider wrapping in the conditions
                     if lane < self.num_lanes - 1:
                         pos_x = (w + 1) % self.width
-                        move_str += f'(up_next pt{pos_x}pt{lane+1} pt{w}pt{lane} t{t}) '
+                        up_str += f'(up_next pt{pos_x}pt{lane+1} pt{w}pt{lane} t{t}) '
                     if lane > 0:
                         pos_x = (w + 1) % self.width
-                        move_str += f'(down_next pt{pos_x}pt{lane-1} pt{w}pt{lane} t{t}) '
+                        down_str += f'(down_next pt{pos_x}pt{lane-1} pt{w}pt{lane} t{t}) '
                     # include agent's speed range
                     upper_speed = self.state.agent.speed_range[0]
                     lower_speed = self.state.agent.speed_range[1]
                     for s in range(upper_speed, lower_speed + 1):
                         pos_x = (w - s) % self.width
-                        move_str += f'(forward_next pt{pos_x}pt{lane} pt{w}pt{lane} t{t}) '
+                        forward_str += f'(forward_next pt{pos_x}pt{lane} pt{w}pt{lane} t{t}) '
+        move_str = f'{up_str.rstrip()} \n{down_str.rstrip()} \n{forward_str}'
 
+        agent_str = agent_str.rstrip()
         car_str = car_str.rstrip()
         move_str = move_str.rstrip()
 
-        init_str = f'{agent_str} {car_str} {move_str}'
+        init_str = f'{agent_str} \n\n\n{car_str} \n\n\n{move_str}'
         return init_str
 
 
