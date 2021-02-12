@@ -230,16 +230,19 @@ class GeneratePDDL_Stationary :
             car_str += f'(at {car_pos} car{car.id}) '
             car_str += f'(blocked {car_pos}) '
 
-        move_str = ''
+        forward_str = ''
+        up_str = ''
+        down_str = ''
         for w in range(self.width):
             for lane in range(self.num_lanes):
                 if w < self.width - 1:
-                    move_str += f'(forward_next pt{w+1}pt{lane} pt{w}pt{lane}) '
+                    forward_str += f'(forward_next pt{w+1}pt{lane} pt{w}pt{lane}) '
                 if w < self.width - 1 and lane < self.num_lanes - 1:
-                    move_str += f'(up_next pt{w+1}pt{lane+1} pt{w}pt{lane}) '
+                    up_str += f'(up_next pt{w+1}pt{lane+1} pt{w}pt{lane}) '
                 if w < self.width - 1 and lane > 0:
-                    move_str += f'(down_next pt{w+1}pt{lane-1} pt{w}pt{lane}) '
-        
+                    down_str += f'(down_next pt{w+1}pt{lane-1} pt{w}pt{lane}) '
+        move_str = f'{forward_str.rstrip()} \n{up_str.rstrip()} \n{down_str.rstrip()}'
+
         wrap_str = ''
         for lane in range(self.num_lanes):
             wrap_str += f'(forward_next pt0pt{lane} pt{self.width - 1}pt{lane}) '
@@ -248,7 +251,7 @@ class GeneratePDDL_Stationary :
         move_str = move_str.rstrip()
         wrap_str = wrap_str.rstrip()
 
-        init_str = f'{agent_str} {car_str} {move_str} {wrap_str}'
+        init_str = f'{agent_str} \n{car_str} \n{move_str} \n{wrap_str}'
         return init_str
 
 
