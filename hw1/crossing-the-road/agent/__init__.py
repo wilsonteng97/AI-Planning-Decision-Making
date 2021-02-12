@@ -232,6 +232,8 @@ class GeneratePDDL_Stationary :
         return "(at apn1 apt2) (at tru1 pos1) (at obj11 pos1) (at obj12 pos1) (at obj13 pos1) (at tru2 pos2) (at obj21 pos2) (at obj22 pos2)
                 (at obj23 pos2) (in-city pos1 cit1) (in-city apt1 cit1) (in-city pos2 cit2) (in-city apt2 cit2)" 
         '''  
+        # Problem: Can't predict next pos of cars
+
         start_x = self.state.agent.position.x
         start_y = self.state.agent.position.y
         start_t = 0
@@ -395,6 +397,8 @@ def generateDomainPDDLFile(gen):
                   precondition_string="(and (at ?truck ?loc) (at ?pkg ?loc))", 
                   effect_string= "(and (not (at ?pkg ?loc)) (in ?pkg ?truck))")
     '''
+    # Problem: Can only change actions of agent, not cars.
+    
     gen.addAction(name="UP", 
                   parameters=(("pt1" , "gridcell"), ("pt2" , "gridcell"), ("agt", "agent"), ("t1", "time"), ("t2", "time")), 
                   precondition_string="(and (at ?pt1 ?agt) (at_time ?t1 ?agt) (not (blocked ?pt2 ?t2)) (next_time ?t1 ?t2) (up_next ?pt1 ?pt2 ?t2))", 
