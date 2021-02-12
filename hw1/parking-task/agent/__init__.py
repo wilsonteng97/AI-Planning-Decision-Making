@@ -224,26 +224,43 @@ class GeneratePDDL_Stationary :
         agent = 'agent1'
         agent_str = f'(at pt{start_x}pt{start_y} {agent})'
 
-        car_str = ''
+        at_str = ''
+        blocked_str = ''
         for car in self.state.cars:
             car_pos = f'pt{car.position.x}pt{car.position.y}'
-            car_str += f'(at {car_pos} car{car.id}) '
-            car_str += f'(blocked {car_pos}) '
+            at_str += f'(at {car_pos} car{car.id}) '
+            blocked_str += f'(blocked {car_pos}) '
+        car_str = f'{at_str.rstrip()} \n{blocked_str.rstrip()}'
 
-        move_str = ''
+        forward_str = ''
+        up_str = ''
+        down_str = ''
         for w in range(self.width):
             for lane in range(self.num_lanes):
                 if w < self.width - 1:
-                    move_str += f'(forward_next pt{w+1}pt{lane} pt{w}pt{lane}) '
+                    forward_str += f'(forward_next pt{w+1}pt{lane} pt{w}pt{lane}) '
                 if w < self.width - 1 and lane < self.num_lanes - 1:
-                    move_str += f'(up_next pt{w+1}pt{lane+1} pt{w}pt{lane}) '
+                    up_str += f'(up_next pt{w+1}pt{lane+1} pt{w}pt{lane}) '
                 if w < self.width - 1 and lane > 0:
-                    move_str += f'(down_next pt{w+1}pt{lane-1} pt{w}pt{lane}) '
+                    down_str += f'(down_next pt{w+1}pt{lane-1} pt{w}pt{lane}) '
+        move_str = f'{forward_str.rstrip()} \n{up_str.rstrip()} \n{down_str.rstrip()}'
+
+        forward_wrap_str = ''
+        up_wrap_str = ''
+        down_wrap_str = ''
+        for lane in range(self.num_lanes):
+            forward_wrap_str += f'(forward_next pt0pt{lane} pt{self.width-1}pt{lane}) '
+            if  lane < self.num_lanes - 1:
+                up_wrap_str += f'(up_next pt0pt{lane+1} pt{self.width-1}pt{lane}) '
+            if lane > 0:
+                down_wrap_str += f'(down_next pt0pt{lane-1} pt{self.width-1}pt{lane}) '
+        wrap_str = f'{forward_wrap_str.rstrip()} \n{up_wrap_str.rstrip()} \n{down_wrap_str.rstrip()}'
 
         car_str = car_str.rstrip()
         move_str = move_str.rstrip()
+        wrap_str = wrap_str.rstrip()
 
-        init_str = f'{agent_str} {car_str} {move_str}'
+        init_str = f'{agent_str} \n{car_str} \n{move_str} \n{wrap_str}'
         return init_str
 
 
