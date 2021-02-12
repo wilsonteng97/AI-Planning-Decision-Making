@@ -237,7 +237,7 @@ class GeneratePDDL_Stationary :
         start_t = 0
         agent = 'agent1'
 
-        TIME_FACTOR = 3
+        TIME_FACTOR = 1 # Only cars can wrap around, agent can't wrap around.
         TIME_LIMIT = TIME_FACTOR * self.width
 
         at_pos = f'(at pt{start_x}pt{start_y} {agent})'
