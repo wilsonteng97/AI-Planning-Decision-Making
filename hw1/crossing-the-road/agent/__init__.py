@@ -54,7 +54,7 @@ test_config = [{'lanes': [LaneSpec(6, [-2, -2])] *2 + [LaneSpec(6, [-5, -5])] *2
               ]
 
 
-test_case_number = 1 # Change the index for a different test case
+test_case_number = 0 # Change the index for a different test case
 LANES = test_config[test_case_number]['lanes']
 WIDTH = test_config[test_case_number]['width']
 RANDOM_SEED = test_config[test_case_number]['seed']
@@ -222,6 +222,16 @@ class GeneratePDDL_Stationary :
             for lane in range(self.num_lanes) :
                 self.grid_cell_list.append("pt{}pt{}".format(w, lane))
     
+
+    def generateTimespan(self):
+        TIME_FACTOR = 1 # Only cars can wrap around, agent can't wrap around.
+        TIME_LIMIT = TIME_FACTOR * self.width
+
+        self.time_span = []
+        for t in range(TIME_LIMIT + 1):
+            self.time_span.append("t{}".format(t))
+
+
     def set_to_str(self, set_):
         list_of_str = [str(s) for s in set_]
         joined_str = " ".join(list_of_str)
@@ -280,39 +290,42 @@ class GeneratePDDL_Stationary :
                 car_lane = car.position.y
                 lane_speed = self.lanes[car_lane][1][0]
                 # lane_speed is defined as negative
-                wrapped_x = self.width - ((car.position.x - lane_speed * t) % self.width)
+                # wrapped_x = self.width - ((car.position.x - lane_speed * t) % self.width)
+                wrapped_x = car.position.x + lane_speed * t
+                if wrapped_x < 0:
+                    wrapped_x = self.width - (abs(wrapped_x) % self.width)
 
                 # block occupancy trails
                 for s in range(1, abs(lane_speed)):
                     trail_x = (wrapped_x + s) % self.width
                     trail_set.add(f'(blocked pt{trail_x}pt{car_lane} t{t}) ')
 
-                car_pos = f'pt{wrapped_x}pt{car_lane}'
-                # car_str += f'(at_time t{t} car{car.id}) '
                 # block current car position at time t
+                car_pos = f'pt{wrapped_x}pt{car_lane}'
                 blocked_set.add(f'(blocked {car_pos} t{t}) ')
+        
         car_set = trail_set.union(blocked_set)
         car_str = self.set_to_str(car_set)        
 
         up_str = ''
         down_str = ''
         forward_str = ''
-        for t in range(1, TIME_LIMIT + 1):
-            for w in range(self.width):
-                for lane in range(self.num_lanes):
-                    # consider wrapping in the conditions
-                    if lane < self.num_lanes - 1:
-                        pos_x = (w + 1) % self.width
-                        up_str += f'(up_next pt{pos_x}pt{lane+1} pt{w}pt{lane} t{t}) '
-                    if lane > 0:
-                        pos_x = (w + 1) % self.width
-                        down_str += f'(down_next pt{pos_x}pt{lane-1} pt{w}pt{lane} t{t}) '
-                    # include agent's speed range
-                    upper_speed = self.state.agent.speed_range[0]
-                    lower_speed = self.state.agent.speed_range[1]
-                    for s in range(upper_speed, lower_speed + 1):
-                        pos_x = (w - s) % self.width
-                        forward_str += f'(forward_next pt{pos_x}pt{lane} pt{w}pt{lane} t{t}) '
+        for w in range(self.width):
+            for lane in range(self.num_lanes):
+                # consider wrapping in the conditions
+                if lane < self.num_lanes - 1:
+                    pos_x = (w + 1) % self.width
+                    up_str += f'(up_next pt{pos_x}pt{lane+1} pt{w}pt{lane}) '
+                if lane > 0:
+                    pos_x = (w + 1) % self.width
+                    down_str += f'(down_next pt{pos_x}pt{lane-1} pt{w}pt{lane}) '
+                # include agent's speed range
+                upper_speed = self.state.agent.speed_range[0]
+                lower_speed = self.state.agent.speed_range[1]
+                for s in range(upper_speed, lower_speed + 1):
+                    pos_x = (w - s) % self.width
+                    forward_str += f'(forward_next pt{pos_x}pt{lane} pt{w}pt{lane}) '
+        
         move_str = f'{up_str.rstrip()} \n{down_str.rstrip()} \n{forward_str}'
 
         agent_str = agent_str.rstrip()
@@ -393,9 +406,9 @@ def generateDomainPDDLFile(gen):
     gen.addPredicate(name="at", parameters=(("pt1" , "gridcell"), ("car", "car")))
     gen.addPredicate(name="at_time", parameters=[("t1", "time")])
     gen.addPredicate(name="next_time", parameters=(("t1", "time"), ("t2", "time")))
-    gen.addPredicate(name="up_next", parameters=(("pt1" , "gridcell"), ("pt2", "gridcell"), ("t2", "time")))
-    gen.addPredicate(name="down_next", parameters=(("pt1" , "gridcell"), ("pt2", "gridcell"), ("t2", "time")))
-    gen.addPredicate(name="forward_next", parameters=(("pt1" , "gridcell"), ("pt2", "gridcell"), ("t2", "time")))
+    gen.addPredicate(name="up_next", parameters=(("pt1" , "gridcell"), ("pt2", "gridcell")))
+    gen.addPredicate(name="down_next", parameters=(("pt1" , "gridcell"), ("pt2", "gridcell")))
+    gen.addPredicate(name="forward_next", parameters=(("pt1" , "gridcell"), ("pt2", "gridcell")))
     gen.addPredicate(name="blocked", parameters=[("pt1" , "gridcell"), ("t2", "time")] , isLastPredicate=True)
 
     '''
@@ -419,18 +432,18 @@ def generateDomainPDDLFile(gen):
 
     gen.addAction(name="UP", 
                   parameters=(("pt1" , "gridcell"), ("pt2" , "gridcell"), ("agt", "agent"), ("t1", "time"), ("t2", "time")), 
-                  precondition_string="(and (at ?pt1 ?agt) (at_time ?t1) (not (blocked ?pt2 ?t2)) (next_time ?t1 ?t2) (up_next ?pt1 ?pt2 ?t2))", 
-                  effect_string= "(and (not (at ?pt1 ?agt)) (not (at_time ?t1)) (at ?pt2 ?agt) (at_time ?t2) (not (next_time ?t1 ?t2)))")
+                  precondition_string="(and (at ?pt1 ?agt) (at_time ?t1) (next_time ?t1 ?t2) (up_next ?pt1 ?pt2) (not (blocked ?pt2 ?t2)))", 
+                  effect_string= "(and (not (at ?pt1 ?agt)) (not (at_time ?t1)) (at ?pt2 ?agt) (at_time ?t2))")
 
     gen.addAction(name="DOWN", 
                   parameters=(("pt1" , "gridcell"), ("pt2" , "gridcell"), ("agt", "agent"), ("t1", "time"), ("t2", "time")), 
-                  precondition_string="(and (at ?pt1 ?agt) (at_time ?t1) (not (blocked ?pt2 ?t2)) (next_time ?t1 ?t2) (down_next ?pt1 ?pt2 ?t2))", 
-                  effect_string= "(and (not (at ?pt1 ?agt)) (not (at_time ?t1)) (at ?pt2 ?agt) (at_time ?t2) (not (next_time ?t1 ?t2)))")
+                  precondition_string="(and (at ?pt1 ?agt) (at_time ?t1) (next_time ?t1 ?t2) (down_next ?pt1 ?pt2) (not (blocked ?pt2 ?t2)))", 
+                  effect_string= "(and (not (at ?pt1 ?agt)) (not (at_time ?t1)) (at ?pt2 ?agt) (at_time ?t2))")
 
     gen.addAction(name="FORWARD", 
                   parameters=(("pt1" , "gridcell"), ("pt2" , "gridcell"), ("agt", "agent"), ("t1", "time"), ("t2", "time")), 
-                  precondition_string="(and (at ?pt1 ?agt) (at_time ?t1) (not (blocked ?pt2 ?t2)) (next_time ?t1 ?t2) (forward_next ?pt1 ?pt2 ?t2))", 
-                  effect_string= "(and (not (at ?pt1 ?agt)) (not (at_time ?t1)) (at ?pt2 ?agt) (at_time ?t2) (not (next_time ?t1 ?t2)))")
+                  precondition_string="(and (at ?pt1 ?agt) (at_time ?t1) (next_time ?t1 ?t2) (forward_next ?pt1 ?pt2) (not (blocked ?pt2 ?t2)))", 
+                  effect_string= "(and (not (at ?pt1 ?agt)) (not (at_time ?t1)) (at ?pt2 ?agt) (at_time ?t2))")
 
     gen.generateDomainPDDL()
 
@@ -441,6 +454,8 @@ def generateProblemPDDLFile(gen):
     '''
     gen.addProblemHeader("parking", "grid_world")
     gen.addObjects("agent", ["agent1"])
+    gen.generateTimespan()
+    gen.addObjects("time", gen.time_span)
     gen.generateGridCells()
     gen.addObjects("gridcell", gen.grid_cell_list, isLastObject=True)
     gen.addInitState()
@@ -471,9 +486,7 @@ def simulateSolution(env):
     '''
     Simulates the plan given by the solver on the environment
     '''
-    env.render()
-    for a in (env.actions):
-        print(a)
+    env.render() # env.actions: up, down, forward[-3], forward[-2], forward[-1]
     plan_file = open('sas_plan', 'r')
     for line in plan_file.readlines() :
         if line[0] == '(' :
@@ -483,7 +496,11 @@ def simulateSolution(env):
             if action == 'down' :
                 env.step(env.actions[1])
             if action == 'forward' :
-                env.step(env.actions[2])
+                start = int(line.split()[1].split("pt")[1])
+                end = int(line.split()[2].split("pt")[1])
+                res = start - end
+                fs_range = len(env.actions) - 2
+                env.step(env.actions[2 + (fs_range - res)])
             env.render()
 
 def generatePlan(env):
@@ -509,15 +526,10 @@ def test() :
     '''
     env=gym.make('GridDriving-v0', lanes=LANES, width=WIDTH, random_seed=RANDOM_SEED, agent_speed_range=(-3,-1))
     gen = initializeSystem(env)
-    print("initializeSystem")
     generateDomainPDDLFile(gen)
-    print("domain")
     generateProblemPDDLFile(gen)
-    print("problem")
     runPDDLSolver(gen)
-    print("solver")
     simulateSolution(env)
-    print("sim")
     # delete_files(gen)
 
 if SUBMISSION :
