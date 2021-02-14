@@ -467,11 +467,7 @@ def runPDDLSolver(gen):
     '''
     Runs the fast downward solver to get the optimal plan
     '''
-    sas_pth = r"/workspaces/AI-Planning-Decision-Making/hw1/crossing-the-road/agent/sas_plan"
-    if os.path.exists(sas_pth): print("before")
-    print(FAST_DOWNWARD_DIRECTORY_ABSOLUTE_PATH + 'fast-downward.py ' + PDDL_FILE_ABSOLUTE_PATH + gen.domain_file_name + ' ' + PDDL_FILE_ABSOLUTE_PATH + gen.problem_file_name + ' --search  \"lazy_greedy([ff()], preferred=[ff()])\"' + ' > temp ')
     os.system(FAST_DOWNWARD_DIRECTORY_ABSOLUTE_PATH + 'fast-downward.py ' + PDDL_FILE_ABSOLUTE_PATH + gen.domain_file_name + ' ' + PDDL_FILE_ABSOLUTE_PATH + gen.problem_file_name + ' --search  \"lazy_greedy([ff()], preferred=[ff()])\"' + ' > temp ')
-    if os.path.exists(sas_pth): print("after")
 
 def delete_files(gen) :
     '''
