@@ -54,7 +54,7 @@ test_config = [{'lanes': [LaneSpec(6, [-2, -2])] *2 + [LaneSpec(6, [-5, -5])] *2
                 'seed': 40}
               ]
 
-test_case_number = 5 # Change the index for a different test case
+test_case_number = 0 # Change the index for a different test case
 LANES = test_config[test_case_number]['lanes']
 WIDTH = test_config[test_case_number]['width']
 RANDOM_SEED = test_config[test_case_number]['seed']
@@ -510,7 +510,13 @@ def generatePlan(env):
             if action == 'down' :
                 action_sequence.append(env.actions[1])
             if action == 'forward' :
-                action_sequence.append(env.actions[2])
+                start = int(line.split()[1].split("pt")[1])
+                end = int(line.split()[2].split("pt")[1])
+                res = start - end
+                fs_range = len(env.actions) - 2
+                action_idx = (2 + (fs_range - res)) % len(env.actions)
+
+                action_sequence.append(env.actions[action_idx])
     return action_sequence
 
 def test() :
@@ -523,7 +529,8 @@ def test() :
     generateProblemPDDLFile(gen)
     runPDDLSolver(gen)
     simulateSolution(env)
-    # delete_files(gen)
+    print(f"\nAction sequence:\n{generatePlan(env)}")
+    delete_files(gen)
 
 if SUBMISSION :
     from runner.abstracts import Agent
