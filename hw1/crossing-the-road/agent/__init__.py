@@ -54,7 +54,7 @@ test_config = [{'lanes': [LaneSpec(6, [-2, -2])] *2 + [LaneSpec(6, [-5, -5])] *2
                 'seed': 40}
               ]
 
-test_case_number = 0 # Change the index for a different test case
+test_case_number = 5 # Change the index for a different test case
 LANES = test_config[test_case_number]['lanes']
 WIDTH = test_config[test_case_number]['width']
 RANDOM_SEED = test_config[test_case_number]['seed']
@@ -315,6 +315,7 @@ class GeneratePDDL_Stationary :
                 if lane > 0:
                     pos_x = (w + 1) % self.width
                     down_str += f'(down_next pt{pos_x}pt{lane-1} pt{w}pt{lane}) '
+
                 # include agent's speed range
                 upper_speed = self.state.agent.speed_range[0]
                 lower_speed = self.state.agent.speed_range[1]
@@ -490,7 +491,9 @@ def simulateSolution(env):
                 end = int(line.split()[2].split("pt")[1])
                 res = start - end
                 fs_range = len(env.actions) - 2
-                env.step(env.actions[2 + (fs_range - res)])
+                action_idx = (2 + (fs_range - res)) % len(env.actions)
+
+                env.step(env.actions[action_idx])
             env.render()
 
 def generatePlan(env):
