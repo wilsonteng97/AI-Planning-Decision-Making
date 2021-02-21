@@ -59,6 +59,8 @@ LANES = test_config[test_case_number]['lanes']
 WIDTH = test_config[test_case_number]['width']
 RANDOM_SEED = test_config[test_case_number]['seed']
 
+TIME_FACTOR = 1 # Only cars can wrap around, agent can't wrap around.
+
 
 class GeneratePDDL_Stationary :
     '''
@@ -78,6 +80,8 @@ class GeneratePDDL_Stationary :
         self.action_strings = ""
         self.problem_string = ""
         self.object_strings = self.addHeader("objects")
+
+        self.time_limit = TIME_FACTOR * self.width
 
 
     def addDomainHeader(self, name='default_header') :
@@ -224,11 +228,8 @@ class GeneratePDDL_Stationary :
     
 
     def generateTimespan(self):
-        TIME_FACTOR = 1 # Only cars can wrap around, agent can't wrap around.
-        TIME_LIMIT = TIME_FACTOR * self.width
-
         self.time_span = []
-        for t in range(TIME_LIMIT + 1):
+        for t in range(self.time_limit + 1):
             self.time_span.append("t{}".format(t))
 
 
@@ -267,14 +268,11 @@ class GeneratePDDL_Stationary :
         start_t = 0
         agent = 'agent1'
 
-        TIME_FACTOR = 1 # Only cars can wrap around, agent can't wrap around.
-        TIME_LIMIT = TIME_FACTOR * self.width
-
         at_pos = f'(at pt{start_x}pt{start_y} {agent})'
         at_time = f'(at_time t{start_t})'
 
         next_time = ''
-        for time in range(start_t, TIME_LIMIT):
+        for time in range(start_t, self.time_limit):
             next_time += f'(next_time t{time} t{time + 1}) '
 
         next_time = next_time.rstrip()
@@ -283,7 +281,7 @@ class GeneratePDDL_Stationary :
         trail_set = set()
         blocked_set = set()
         # car status at t0 is of no interest, so we start with t1
-        for t in range(1, TIME_LIMIT + 1):
+        for t in range(1, self.time_limit + 1):
             for car in self.state.cars:
                 car_lane = car.position.y
                 lane_speed = self.lanes[car_lane][1][0]
@@ -349,7 +347,6 @@ class GeneratePDDL_Stationary :
 
         return "(and (at obj11 apt1) (at obj23 pos1) (at obj13 apt1) (at obj21 pos1)))"
         '''
-
         goal_x = self.state.finish_position.x
         goal_y = self.state.finish_position.y
         agent = 'agent1'
