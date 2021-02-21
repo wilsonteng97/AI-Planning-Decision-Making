@@ -530,7 +530,7 @@ def test() :
     runPDDLSolver(gen)
     simulateSolution(env)
     print(f"\nAction sequence:\n{generatePlan(env)}")
-    delete_files(gen)
+    # delete_files(gen)
 
 if SUBMISSION :
     from runner.abstracts import Agent
