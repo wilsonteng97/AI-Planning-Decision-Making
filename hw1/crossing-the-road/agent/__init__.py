@@ -486,6 +486,7 @@ def delete_files(gen) :
     os.remove(PDDL_FILE_ABSOLUTE_PATH + gen.domain_file_name)
     os.remove(PDDL_FILE_ABSOLUTE_PATH + gen.problem_file_name)
     os.remove('sas_plan')
+    os.remove('temp')
 
 
 def simulateSolution(env):
@@ -545,7 +546,7 @@ def test() :
     runPDDLSolver(gen)
     simulateSolution(env)
     print(f"\nAction sequence:\n{generatePlan(env)}")
-    # delete_files(gen)
+    delete_files(gen)
 
 if SUBMISSION :
     from runner.abstracts import Agent
