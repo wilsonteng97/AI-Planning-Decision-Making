@@ -1,0 +1,5 @@
+(forward pt4pt2 pt3pt2 agent1)
+(up pt3pt2 pt2pt1 agent1)
+(forward pt2pt1 pt1pt1 agent1)
+(up pt1pt1 pt0pt0 agent1)
+; cost = 4 (unit cost)
