@@ -1,4 +1,10 @@
-SUBMISSION = False #Set this to true for submission. Set it to False if testing on your machine.
+##################### CS4246 Group 6 #####################
+__author__ = ["ZHUANG XINJIE", "WILSON THURMAN TENG"]
+__email__ = ["e0202855@u.nus.edu", "e0697830@u.nus.edu"]
+__group__ = "CS4246 Group 6"
+##########################################################
+
+SUBMISSION = False # Set this to true for submission. Set it to False if testing on your machine.
 
 import gym
 import gym_grid_driving
