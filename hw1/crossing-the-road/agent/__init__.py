@@ -310,17 +310,26 @@ class GeneratePDDL_Stationary :
             for lane in range(self.num_lanes):
                 # consider wrapping in the conditions
                 if lane < self.num_lanes - 1:
-                    pos_x = (w + 1) % self.width
+                    #pos_x = (w + 1) % self.width
+                    pos_x = w + 1
+                    if pos_x >= self.width:
+                        continue
                     up_str += f'(up_next pt{pos_x}pt{lane+1} pt{w}pt{lane}) '
                 if lane > 0:
-                    pos_x = (w + 1) % self.width
+                    #pos_x = (w + 1) % self.width
+                    pos_x = w + 1
+                    if pos_x >= self.width:
+                        continue
                     down_str += f'(down_next pt{pos_x}pt{lane-1} pt{w}pt{lane}) '
 
                 # include agent's speed range
                 upper_speed = self.state.agent.speed_range[0]
                 lower_speed = self.state.agent.speed_range[1]
                 for s in range(upper_speed, lower_speed + 1):
-                    pos_x = (w - s) % self.width
+                    #pos_x = (w - s) % self.width
+                    pos_x = w - s
+                    if pos_x >= self.width:
+                        continue
                     forward_str += f'(forward_next pt{pos_x}pt{lane} pt{w}pt{lane}) '
         
         move_str = f'{up_str.rstrip()} \n{down_str.rstrip()} \n{forward_str}'
