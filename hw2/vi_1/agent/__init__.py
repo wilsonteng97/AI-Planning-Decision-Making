@@ -205,11 +205,11 @@ def extractValueAndPolicy(env, lanes, width, gamma):
     '''
     Function that constructs the MDP, solves it with value iteration, and returns the optimal policy
     '''
-    mdp = GridDrivingMDP(env=env, lanes=lanes, width=width,gamma=gamma)
+    mdp = GridDrivingMDP(env=env, lanes=lanes, width=width, gamma=gamma)
     tran = mdp.get_transition_function()
     rwd = mdp.get_reward_function()
 
-    rwds = rwd.reshape(2 * (len(lanes) * width) ** len(env.cars),2 * (len(lanes) * width) ** len(env.cars))
+    rwds = rwd.reshape(2 * (len(lanes) * width) ** len(env.cars), 2 * (len(lanes) * width) ** len(env.cars))
     trans = tran.reshape(2 * (len(lanes) * width) ** len(env.cars), 5, 2 * (len(lanes) * width) ** len(env.cars))
     trans = trans.transpose(1,0,2)
 
@@ -255,7 +255,14 @@ if not SUBMISSION:
                    stochasticity=stochasticity, tensor_state=False, flicker_rate=0., mask=None, random_seed=RANDOM_SEED)
     actions = env.actions
     env.render()
-     
+
+    # print initial evironment state
+    print(f"actions = {len(actions)} | {str(actions)[1:-1]} \
+            \nlanes = {len(LANES)} --> {LANES}\nwidth = {WIDTH}\ngamma = {GAMMA} \
+            \nfinish_position = {FIN_POS}\nagent_pos_init = {AGENT_POS} \
+            \nstochasticity = {stochasticity}\nrandom_seed = {RANDOM_SEED} \
+            \nnum_cars={len(env.cars)}\n")
+    
     pol = extractValueAndPolicy(env, LANES, WIDTH, GAMMA)
     
     env.reset()
