@@ -182,8 +182,11 @@ def value_iteration(trn_fn, rwd_fn, gamma):
     value_fn : shape - (|S|), the optimal value function of the MDP
     policy : shape - (|S|),  the optimal policy of the MDP
     '''
-    value_fn = np.zeros(rwd_fn.shape[0])    
-    policy = np.zeros(rwd_fn.shape[0])
+    num_states = rwd_fn.shape[0]
+    num_actions = trn_fn.shape[0]
+
+    value_fn = np.zeros(num_states)
+    policy = np.zeros(num_states)
 
     delta = 0.001                        
     '''
@@ -196,22 +199,18 @@ def value_iteration(trn_fn, rwd_fn, gamma):
               matrix multiplications as is interferes with the evaluation script.
               Instead you can use "matmul()" function defined above
     ''' 
-    num_actions = trn_fn.shape[0]
-    it_count = 0 
+    it_count = 0
     while True:
         max_norm = 0
 
-        for s in range(rwd_fn.shape[0]):
+        # Iterate through all states
+        for s in range(num_states):
             action_vals = np.zeros(num_actions)
 
-            # Update value of actions in a particular state
+            # Update value of actions in this state
             for a in range(num_actions):
-                next_state = int(policy[s]) # Next state according to curr policy
-                curr_rwd = rwd_fn[s][next_state] # Reward of moving from s to s'
-                prob = trn_fn[a][s][next_state] # P(s'|s,a)
+                action_vals[a] = sum(trn_fn[a][s] * (rwd_fn[s] + gamma * value_fn)) # bellman eqn
                 
-                action_vals[a] = prob * (curr_rwd + gamma * value_fn[next_state]) # bellman eqn
-
             max_a_val = max(action_vals) # Max action value in curr state
             contraction_dist = abs(max_a_val - value_fn[s]) # dist btw new and old max action value
             max_norm = max(max_norm, contraction_dist) # Update max_norm 
@@ -220,12 +219,13 @@ def value_iteration(trn_fn, rwd_fn, gamma):
             value_fn[s] = max_a_val
             policy[s] = np.argmax(action_vals)
 
+        it_count += 1
+
         if (max_norm < delta):
             break
 
-        if it_count == 10000: # stop at MAX_ITERATONS
-            break
-        it_count += 1
+    if SUBMISSION == False:
+        print(f"[max_norm]: {max_norm} | [Num iterations to reach delta={delta}]: {it_count}")
     return value_fn, policy.astype(int)
 
 
@@ -272,7 +272,7 @@ if not SUBMISSION:
                    {'lanes' : [LaneSpec(1, [-3, -1])] *2 + [LaneSpec(0, [0, 0])],'width' :4, 'gamma' : 0.99, 'seed' : 111, 'fin_pos' : Point(0,0), 'agent_pos': Point(3,2),'stochasticity': .5 },
                    {'lanes' : [LaneSpec(1, [-3, -1]), LaneSpec(0, [0, 0]), LaneSpec(1, [-3, -1])] ,'width' :4, 'gamma' : 0.999, 'seed' : 125, 'fin_pos' : Point(0,0), 'agent_pos': Point(3,2),'stochasticity': 0.9 }]
 
-    test_case_number = 1 #Change the index for a different test case
+    test_case_number = 1 # Change the index for a different test case
     LANES = test_config[test_case_number]['lanes']
     WIDTH = test_config[test_case_number]['width']
     RANDOM_SEED = test_config[test_case_number]['seed']
@@ -287,11 +287,11 @@ if not SUBMISSION:
     env.render()
 
     # print initial evironment state
-    print(f"actions = {len(actions)} | {str(actions)[1:-1]} \
+    print(f"actions = {len(actions)} --> {str(actions)[1:-1]} \
             \nlanes = {len(LANES)} --> {LANES}\nwidth = {WIDTH}\ngamma = {GAMMA} \
             \nfinish_position = {FIN_POS}\nagent_pos_init = {AGENT_POS} \
             \nstochasticity = {stochasticity}\nrandom_seed = {RANDOM_SEED} \
-            \nnum_cars={len(env.cars)}\n")
+            \nnum_cars = {len(env.cars)}\n")
     
     pol = extractValueAndPolicy(env, LANES, WIDTH, GAMMA)
     
