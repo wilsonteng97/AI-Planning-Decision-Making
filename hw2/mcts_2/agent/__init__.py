@@ -171,29 +171,39 @@ if not SUBMISSION:
                    {'lanes' : [LaneSpec(2, [-3, -1])] *4,'width' :10, 'seed' : 125, 'iters': 400},
                    {'lanes' : [LaneSpec(2, [-3, -1])] *4,'width' :10, 'seed' : 25, 'iters': 300}]
 
-    test_case_number = 0  #Change the index for a different test case
+    test_case_number = 0  # Change the index for a different test case
     LANES = test_config[test_case_number]['lanes']
     WIDTH = test_config[test_case_number]['width']
     RANDOM_SEED = test_config[test_case_number]['seed']
     numiters = test_config[test_case_number]['iters']
     stochasticity = 1.
     env = gym.make('GridDriving-v0', lanes=LANES, width=WIDTH, 
-                   agent_speed_range=(-3,-1), finish_position=Point(0,0), #agent_ pos_init=Point(4,2),
+                   agent_speed_range=(-3,-1), finish_position=Point(0,0), # agent_ pos_init=Point(4,2),
                    stochasticity=stochasticity, tensor_state=False, flicker_rate=0., mask=None, random_seed=RANDOM_SEED)
-
     actions = env.actions
     env.render()
+
+    # print initial evironment state
+    print(f"actions = {len(actions)} | {str(actions)[1:-1]} \
+            \nlanes = {len(LANES)} --> {LANES}\nwidth = {WIDTH} \
+            \nstochasticity = {stochasticity}\nrandom_seed = {RANDOM_SEED} \
+            \nnum_cars = {len(env.cars)}\nnumiters = {numiters}\n")
+
     done = False
+    action_hist = []
     mcts = MonteCarloTreeSearch(env=env, numiters=numiters, explorationParam=1.,random_seed=RANDOM_SEED)
     while not env.done:
         state = GridWorldState(env.state, is_done=done)
         action = mcts.buildTreeAndReturnBestAction(initialState=state)
-        print (action)
+        action_name = env.actions[action]
+        print(f"[{action}] {action_name}")
         done = env.step(state=deepcopy(state.state), action=action)[2]
         env.render()
+        action_hist.append(action_name)
         if done == True:
             break
-    print ("simulation done")
+    print(f"action_hist: {action_hist}")
+    print("simulation done")
 
 else :
     from runner.abstracts import Agent
