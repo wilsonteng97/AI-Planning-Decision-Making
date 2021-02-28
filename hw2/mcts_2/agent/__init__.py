@@ -4,7 +4,7 @@ __email__ = ["e0202855@u.nus.edu", "e0697830@u.nus.edu"]
 __group__ = "CS4246 Group 6"
 ##########################################################
 
-SUBMISSION = False # Set this to true for submission. Set it to False if testing on your machine.
+SUBMISSION = False #Set this to true for submission. Set it to False if testing on your machine.
 
 from copy import deepcopy
 import gym
@@ -146,11 +146,20 @@ class MonteCarloTreeSearch:
         FILL ME : This function should implement the backpropation step of MCTS.
                   Update the values of relevant variables in Node Class to complete this function
         '''        
+        curr = node
+        while curr.parent != None:
+            curr.numVisits += 1
+            curr.totalReward += reward
+            curr = curr.parent
+        
+        curr.numVisits += 1
+        curr.totalReward += reward
 
     def chooseBestActionNode(self, node, explorationValue):
         global random
         bestValue = float("-inf")
         bestNodes = []
+        valueDict = {}
         for child in node.children.values():
             '''
             FILL ME : Populate the list bestNodes with all children having maximum value
@@ -159,6 +168,19 @@ class MonteCarloTreeSearch:
                        All the nodes that have the largest value should be included in the list bestNodes.
                        We will then choose one of the nodes in this list at random as the best action node. 
             '''
+            val = (child.totalReward / child.numVisits) + explorationValue * math.sqrt(math.log(node.numVisits) / child.numVisits)
+            
+            if val not in valueDict:
+                valueDict[val] = []
+            valueDict[val].append(child)
+            
+            bestValue = max(val, bestValue)
+        
+        for val in valueDict.keys():
+            if val == bestValue:
+                bestNodes.extend(valueDict[val])
+                break
+
         return random.choice(bestNodes)
 
 
@@ -171,7 +193,7 @@ if not SUBMISSION:
                    {'lanes' : [LaneSpec(2, [-3, -1])] *4,'width' :10, 'seed' : 125, 'iters': 400},
                    {'lanes' : [LaneSpec(2, [-3, -1])] *4,'width' :10, 'seed' : 25, 'iters': 300}]
 
-    test_case_number = 0  #Change the index for a different test case
+    test_case_number = 3  #Change the index for a different test case
     LANES = test_config[test_case_number]['lanes']
     WIDTH = test_config[test_case_number]['width']
     RANDOM_SEED = test_config[test_case_number]['seed']
