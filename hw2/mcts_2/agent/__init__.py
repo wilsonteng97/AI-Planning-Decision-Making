@@ -217,11 +217,10 @@ if not SUBMISSION:
     while not env.done:
         state = GridWorldState(env.state, is_done=done)
         action = mcts.buildTreeAndReturnBestAction(initialState=state)
-        action_name = env.actions[action]
-        print(f"[{action}] {action_name}")
+        print(f"{action}")
         done = env.step(state=deepcopy(state.state), action=action)[2]
         env.render()
-        action_hist.append(action_name)
+        action_hist.append(action)
         if done == True:
             break
     print(f"action_hist: {action_hist}")
