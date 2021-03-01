@@ -209,7 +209,8 @@ def value_iteration(trn_fn, rwd_fn, gamma):
 
             # Update value of actions in this state
             for a in range(num_actions):
-                action_vals[a] = sum(trn_fn[a][s] * (rwd_fn[s] + gamma * value_fn)) # bellman eqn
+                # action_vals[a] = sum(trn_fn[a][s] * (rwd_fn[s] + gamma * value_fn)) # bellman eqn
+                action_vals[a] = matmul(trn_fn[a][s], (rwd_fn[s] + gamma * value_fn)) # matrix-optimized bellman eqn
                 
             max_a_val = max(action_vals) # Max action value in curr state
             contraction_dist = abs(max_a_val - value_fn[s]) # dist btw new and old max action value
