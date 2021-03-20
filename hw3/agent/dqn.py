@@ -59,7 +59,7 @@ class ReplayBuffer():
         if len(self.buffer) >= self.capacity:
         	# if buffer is full, remove the oldest the transition
         	self.buffer.pop(0)
-        
+        # add new transition experience at the end of buffer
         self.buffer.append(transition)
     
     def sample(self, batch_size):
@@ -79,6 +79,7 @@ class ReplayBuffer():
               All `torch.tensor` (except `actions`) should have a datatype `torch.float` and resides in torch device `device`.
         '''
         res = random.sample(self.buffer, batch_size)
+        
         res_state = [r.state for r in res]
         res_action = [r.action for r in res]
         res_reward = [r.reward for r in res]
@@ -91,7 +92,7 @@ class ReplayBuffer():
         next_states = torch.tensor(res_next_state, dtype=torch.float, device=device)
         dones = torch.tensor(res_done, dtype=torch.float, device=device)
 
-        return tuple(states, actions, rewards, next_states, dones)
+        return (states, actions, rewards, next_states, dones)
 
     def __len__(self):
         '''
@@ -141,12 +142,18 @@ class BaseAgent(Base):
                 if action is of type `int`, it should be less than `self.num_actions`
         '''
         prob = random.random()
+        val = 0
+
         if prob < epsilon:
-            # random exploration
-            return random.randrange(self.num_actions)
+        	# random exploration
+            val = random.randrange(self.num_actions)
         else:
+            # actual action
             actions = self.forward(state)
-            return np.argmax(actions.cpu().data.numpy())
+            # choose the action with the best expected return
+            val = np.argmax(actions.cpu().data.numpy())
+        
+        return int(val)
 
 
 class DQN(BaseAgent):
@@ -187,7 +194,21 @@ def compute_loss(model, target, states, actions, rewards, next_states, dones):
         * MSE Loss  : https://pytorch.org/docs/stable/nn.html#torch.nn.MSELoss
         * Huber Loss: https://pytorch.org/docs/stable/nn.html#torch.nn.SmoothL1Loss
     '''
-    pass
+
+    # Huber's loss
+    criterion = torch.nn.SmoothL1Loss()
+
+    # gather predictions for each Q(s,a) in the batch job
+    predictions = model(states).gather(1, actions)
+
+    # (reward + discount factor * maxQ(s',a))
+    nexts = target(next_states).detach().max(1)[0].unsqueeze(1)
+    # only reward term for terminal state (done = true/1)
+    labels = rewards + gamma * nexts * (1 - dones)
+
+    # temporal difference loss = Q(s,a) - (reward + discount * maxQ(s',a))
+    loss = criterion(predictions, labels)
+    return loss
 
 def optimize(model, target, memory, optimizer):
     '''
