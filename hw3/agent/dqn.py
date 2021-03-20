@@ -42,7 +42,7 @@ class ReplayBuffer():
         FILL ME : This function should initialize the replay buffer `self.buffer` with maximum size of `buffer_limit` (`int`).
                   len(self.buffer) should give the current size of the buffer `self.buffer`.
         '''
-        self.max_len = buffer_limit
+        self.capacity = buffer_limit
         self.buffer = list()
     
     def push(self, transition):
@@ -56,7 +56,7 @@ class ReplayBuffer():
         Output:
             * None
         '''
-        if len(self.buffer) >= self.max_len:
+        if len(self.buffer) >= self.capacity:
         	# if buffer is full, remove the oldest the transition
         	self.buffer.pop(0)
         
@@ -79,19 +79,11 @@ class ReplayBuffer():
               All `torch.tensor` (except `actions`) should have a datatype `torch.float` and resides in torch device `device`.
         '''
         res = random.sample(self.buffer, batch_size)
-        res_state = list()
-        res_action = list()
-        res_reward = list()
-        res_next_state = list()
-        res_done = list()
-
-        for i in range(batch_size):
-        	state, action, reward, next_state, done = res[i]
-        	res_state.append(state)
-        	res_action.append(action)
-        	res_reward.append(reward)
-        	res_next_state.append(next_state)
-        	res_done.append(done)
+        res_state = [r.state for r in res]
+        res_action = [r.action for r in res]
+        res_reward = [r.reward for r in res]
+        res_next_state = [r.next_state for r in res]
+        res_done = [r.done for r in res]
         
         states = torch.tensor(res_state, dtype=torch.float, device=device)
         actions = torch.tensor(res_action, device=device)
@@ -150,18 +142,11 @@ class BaseAgent(Base):
         '''
         prob = random.random()
         if prob < epsilon:
-        	# random exploration
-        	return random.randrange(self.num_actions)
+            # random exploration
+            return random.randrange(self.num_actions)
         else:
-        	# TODO: actual action
-        	#
-        	# state.agent: agent position
-        	# state.cars: all car positions
-        	#
-        	# return: Action('up', Point(x, -1)), Action('down', Point(x, 1)), Action('forward', Point(x, 0))
-        	# 
-        	# speed_range = [-(self.num_actions - 2), -1] (agent moves left)
-        	return
+            actions = self.forward(state)
+            return np.argmax(actions.cpu().data.numpy())
 
 
 class DQN(BaseAgent):
