@@ -44,7 +44,7 @@ class ReplayBuffer():
         len(self.buffer) should give the current size of the buffer `self.buffer`.
         '''
         self.capacity = buffer_limit
-        self.buffer = []
+        self.buffer = list()
     
     def push(self, transition):
         '''
@@ -57,9 +57,10 @@ class ReplayBuffer():
         '''
         if len(self.buffer) >= self.capacity:
             # if buffer is full, remove the transition with least reward
-            heapq.heappop(self.buffer)
+            self.buffer.sort(key=lambda t: t[2], reverse=True)
+            self.buffer.pop()
         # add new transition experience to of buffer
-        heapq.heappush(self.buffer, (transition.reward, transition))
+        self.buffer.append(transition)
     
     def sample(self, batch_size):
         '''
@@ -75,15 +76,15 @@ class ReplayBuffer():
                 * `dones`       (`torch.tensor` [batch_size, 1])
               All `torch.tensor` (except `actions`) should have a datatype `torch.float` and resides in torch device `device`.
         '''
-        rewards = [t.reward for t in self.buffer]
+        rewards = [t.reward[0] for t in self.buffer]
         probs_distribution = [float(r) / sum(rewards) for r in rewards]
-        res = np.choice(self.buffer, batch_size, probs_distribution)
+        res = random.choices(self.buffer, weights=probs_distribution, k=batch_size)
         
-        res_state = [r[1].state for r in res]
-        res_action = [r[1].action for r in res]
-        res_reward = [r[1].reward for r in res]
-        res_next_state = [r[1].next_state for r in res]
-        res_done = [r[1].done for r in res]
+        res_state = [r.state for r in res]
+        res_action = [r.action for r in res]
+        res_reward = [r.reward for r in res]
+        res_next_state = [r.next_state for r in res]
+        res_done = [r.done for r in res]
         
         states = torch.tensor(res_state, dtype=torch.float, device=device)
         actions = torch.tensor(res_action, device=device)
