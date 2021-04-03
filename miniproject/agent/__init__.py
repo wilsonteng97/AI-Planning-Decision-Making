@@ -19,9 +19,6 @@ except: pass
 
 
 class DQNAgent(Agent):
-    '''
-    An example agent that just output a random action.
-    '''
     def __init__(self, *args, **kwargs):
         '''
         [OPTIONAL]

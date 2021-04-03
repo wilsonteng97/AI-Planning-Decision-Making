@@ -56,10 +56,9 @@ class ReplayBuffer():
             * None
         '''
         if len(self.buffer) >= self.capacity:
-            # if buffer is full, remove the transition with least reward
-            self.buffer.sort(key=lambda t: t[2], reverse=True)
-            self.buffer.pop()
-        # add new transition experience to of buffer
+            # if buffer is full, remove the oldest the transition
+            self.buffer.pop(0)
+        # add new transition experience at the end of buffer
         self.buffer.append(transition)
     
     def sample(self, batch_size):
@@ -285,7 +284,8 @@ def train(model_class, env):
             agent_y = env.agent.position.y
             # Closer to the goal, higher the reward
             distance = abs(agent_x - finish_x) + abs(agent_y - finish_y)
-            reward += (max_distance - distance)
+            # Progress made relative to the whole picture
+            reward += float(max_distance - distance) / max_distance
 
             # Save transition to replay buffer
             memory.push(Transition(state, [action], [reward], next_state, [done]))
