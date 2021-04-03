@@ -10,15 +10,15 @@ An example to import a Python file.
 
 Uncomment the following lines (both try-except statements) to import everything inside models.py
 '''
-# try:
-#     from models import *
-# except: pass
-# try:
-#     from .models import *
-# except: pass
+try:
+    from models import *
+except: pass
+try:
+    from .models import *
+except: pass
 
 
-class ExampleAgent(Agent):
+class DQNAgent(Agent):
     '''
     An example agent that just output a random action.
     '''
@@ -31,7 +31,11 @@ class ExampleAgent(Agent):
         For example, you might want to load the appropriate neural networks weight 
         in this method.
         '''
-        test_case_id = kwargs.get('test_case_id')
+        #test_case_id = kwargs.get('test_case_id')
+
+        # TODO: load the model
+        self.model = get_model()
+
         '''
         # Uncomment to help debugging
         print('>>> __INIT__ >>>')
@@ -53,9 +57,13 @@ class ExampleAgent(Agent):
 
         This function will be called once before the evaluation.
         '''
-        fast_downward_path  = kwargs.get('fast_downward_path')
-        agent_speed_range   = kwargs.get('agent_speed_range')
-        gamma               = kwargs.get('gamma')
+        #fast_downward_path  = kwargs.get('fast_downward_path')
+        #agent_speed_range   = kwargs.get('agent_speed_range')
+        #gamma               = kwargs.get('gamma')
+
+        # pass (not useful for function approximation)
+        pass
+
         '''
         # Uncomment to help debugging
         print('>>> INITIALIZE >>>')
@@ -98,12 +106,15 @@ class ExampleAgent(Agent):
         * `action`: `int` representing the index of an action or instance of class `Action`.
                     In this example, we only return a random action
         '''
+
+        # TODO: output of function approximator
+
         '''
         # Uncomment to help debugging
         print('>>> STEP >>>')
         print('state:', state)
         '''
-        return random.randrange(5)
+        return self.model.act(state)
 
     def update(self, *args, **kwargs):
         '''
@@ -124,12 +135,14 @@ class ExampleAgent(Agent):
 
         This function might be useful if you want to have policy that is dependant to its past.
         '''
-        state       = kwargs.get('state')
-        action      = kwargs.get('action')
-        reward      = kwargs.get('reward')
-        next_state  = kwargs.get('next_state')
-        done        = kwargs.get('done')
-        info        = kwargs.get('info')
+        # state       = kwargs.get('state')
+        # action      = kwargs.get('action')
+        # reward      = kwargs.get('reward')
+        # next_state  = kwargs.get('next_state')
+        # done        = kwargs.get('done')
+        # info        = kwargs.get('info')
+        pass
+
         '''
         # Uncomment to help debugging
         print('>>> UPDATE >>>')
@@ -147,7 +160,7 @@ def create_agent(test_case_id, *args, **kwargs):
     Method that will be called to create your agent during testing.
     You can, for example, initialize different class of agent depending on test case.
     '''
-    return ExampleAgent(test_case_id=test_case_id)
+    return DQNAgent()
 
 
 if __name__ == '__main__':
