@@ -44,7 +44,7 @@ class ReplayBuffer():
         len(self.buffer) should give the current size of the buffer `self.buffer`.
         '''
         self.capacity = buffer_limit
-        self.buffer = list()
+        self.buffer = []
     
     def push(self, transition):
         '''
@@ -56,10 +56,10 @@ class ReplayBuffer():
             * None
         '''
         if len(self.buffer) >= self.capacity:
-            # if buffer is full, remove the oldest the transition
-            self.buffer.pop(0)
-        # add new transition experience at the end of buffer
-        self.buffer.append(transition)
+            # if buffer is full, remove the transition with least reward
+            heapq.heappop(self.buffer)
+        # add new transition experience to of buffer
+        heapq.heappush(self.buffer, (transition.reward, transition))
     
     def sample(self, batch_size):
         '''
@@ -75,13 +75,15 @@ class ReplayBuffer():
                 * `dones`       (`torch.tensor` [batch_size, 1])
               All `torch.tensor` (except `actions`) should have a datatype `torch.float` and resides in torch device `device`.
         '''
-        res = random.sample(self.buffer, batch_size)
+        rewards = [t.reward for t in self.buffer]
+        probs_distribution = [float(r) / sum(rewards) for r in rewards]
+        res = np.choice(self.buffer, batch_size, probs_distribution)
         
-        res_state = [r.state for r in res]
-        res_action = [r.action for r in res]
-        res_reward = [r.reward for r in res]
-        res_next_state = [r.next_state for r in res]
-        res_done = [r.done for r in res]
+        res_state = [r[1].state for r in res]
+        res_action = [r[1].action for r in res]
+        res_reward = [r[1].reward for r in res]
+        res_next_state = [r[1].next_state for r in res]
+        res_done = [r[1].done for r in res]
         
         states = torch.tensor(res_state, dtype=torch.float, device=device)
         actions = torch.tensor(res_action, device=device)
@@ -266,6 +268,9 @@ def train(model_class, env):
         epsilon = compute_epsilon(episode)
         state = env.reset()
         episode_rewards = 0.0
+        finish_x = env.finish_position.x
+        finish_y = env.finish_position.y
+        max_distance = len(env.lanes) + env.width
 
         for t in range(t_max):
             # Model takes action
@@ -273,6 +278,13 @@ def train(model_class, env):
 
             # Apply the action to the environment
             next_state, reward, done, info = env.step(action)
+
+            # Reward shaping (Manhattan distance)
+            agent_x = env.agent.position.x
+            agent_y = env.agent.position.y
+            # Closer to the goal, higher the reward
+            distance = abs(agent_x - finish_x) + abs(agent_y - finish_y)
+            reward += (max_distance - distance)
 
             # Save transition to replay buffer
             memory.push(Transition(state, [action], [reward], next_state, [done]))
