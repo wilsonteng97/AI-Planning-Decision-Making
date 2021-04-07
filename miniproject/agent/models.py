@@ -76,8 +76,15 @@ class ReplayBuffer():
               All `torch.tensor` (except `actions`) should have a datatype `torch.float` and resides in torch device `device`.
         '''
         rewards = [t.reward[0] for t in self.buffer]
-        probs_distribution = [float(r) / sum(rewards) for r in rewards]
-        res = random.choices(self.buffer, weights=probs_distribution, k=batch_size)
+
+        # min-max normalisation (signed integer to 0-1 range)
+        max_r = max(rewards)
+        min_r = min(rewards)
+        range_r = max_r - min_r
+        normalised_reward = [(float(r) - min_r) / range_r for r in rewards]
+        
+        # weighted sampling
+        res = random.choices(self.buffer, weights=normalised_reward, k=batch_size)
         
         res_state = [r.state for r in res]
         res_action = [r.action for r in res]
@@ -271,6 +278,7 @@ def train(model_class, env):
         finish_x = env.finish_position.x
         finish_y = env.finish_position.y
         max_distance = len(env.lanes) + env.width
+        prev_distance = max_distance
 
         for t in range(t_max):
             # Model takes action
@@ -282,10 +290,20 @@ def train(model_class, env):
             # Reward shaping (Manhattan distance)
             agent_x = env.agent.position.x
             agent_y = env.agent.position.y
-            # Closer to the goal, higher the reward
+
+            # closer to the goal, higher the reward
             distance = abs(agent_x - finish_x) + abs(agent_y - finish_y)
-            # Progress made relative to the whole picture
-            reward += float(max_distance - distance) / max_distance
+            
+            if distance != 0:
+              reward = -distance
+            # amplify reward when reaching the goal
+            else:
+              reward = 1000
+            
+            # made effort in the right direction
+            if (distance < prev_distance):
+              reward += 30
+              prev_distance = distance
 
             # Save transition to replay buffer
             memory.push(Transition(state, [action], [reward], next_state, [done]))

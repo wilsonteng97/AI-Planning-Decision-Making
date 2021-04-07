@@ -19,6 +19,9 @@ except: pass
 
 
 class DQNAgent(Agent):
+    '''
+    An example agent that just output a random action.
+    '''
     def __init__(self, *args, **kwargs):
         '''
         [OPTIONAL]
@@ -104,7 +107,8 @@ class DQNAgent(Agent):
                     In this example, we only return a random action
         '''
 
-        # TODO: output of function approximator
+        # TODO: something might be missing here.
+        # TODO: we need a more effective way to choose next action
 
         '''
         # Uncomment to help debugging
