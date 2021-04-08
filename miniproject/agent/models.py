@@ -275,10 +275,13 @@ def train(model_class, env):
         epsilon = compute_epsilon(episode)
         state = env.reset()
         episode_rewards = 0.0
+        # distance reward shaping
         finish_x = env.finish_position.x
         finish_y = env.finish_position.y
         max_distance = len(env.lanes) + env.width
         prev_distance = max_distance
+        # time taken
+        time = 1
 
         for t in range(t_max):
             # Model takes action
@@ -295,15 +298,41 @@ def train(model_class, env):
             distance = abs(agent_x - finish_x) + abs(agent_y - finish_y)
             
             if distance != 0:
-              reward = -distance
+              reward = 0 - distance
             # amplify reward when reaching the goal
             else:
               reward = 1000
             
-            # made effort in the right direction
-            if (distance < prev_distance):
-              reward += 30
+            # made effort in the right x-direction
+            if (agent_x == finish_x):
+              reward += 50
+            elif (agent_x < prev_x):
+              reward += 10 * (prev_x - agent_x)
+              prev_x = agent_x
+            else:
+              reward -= 10 * (agent_x - prev_x + 1)
+            
+            # made effort in the right y-direction
+            if (agent_y == finish_y):
+              reward += 50
+            elif (agent_y < prev_y):
+              reward += 10 * (prev_y - agent_y)
+              prev_y = agent_y
+            else:
+              reward -= 10 * (agent_y - prev_y + 1)
+
+            # made effort in the right overall direction
+            if (distance == 0):
+              reward += 100
+            elif (distance < prev_distance):
+              reward += 20 * (prev_distance - distance)
               prev_distance = distance
+            else:
+              reward -= 20 * (distance - prev_distance + 1)
+
+            # penalise for taking longer time
+            reward -= time * 1
+            time += 1
 
             # Save transition to replay buffer
             memory.push(Transition(state, [action], [reward], next_state, [done]))
