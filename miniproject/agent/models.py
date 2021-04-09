@@ -1,3 +1,9 @@
+##################### CS4246 Group 6 #####################
+__author__ = ["ZHUANG XINJIE", "WILSON THURMAN TENG"]
+__email__ = ["e0202855@u.nus.edu", "e0697830@u.nus.edu"]
+__group__ = "CS4246 Group 6"
+##########################################################
+
 import gym
 import gym_grid_driving
 import collections
@@ -279,6 +285,8 @@ def train(model_class, env):
         finish_x = env.finish_position.x
         finish_y = env.finish_position.y
         max_distance = len(env.lanes) + env.width
+        prev_x = env.width
+        prev_y = len(env.lanes)
         prev_distance = max_distance
         # time taken
         time = 1
@@ -294,41 +302,42 @@ def train(model_class, env):
             agent_x = env.agent.position.x
             agent_y = env.agent.position.y
 
-            # closer to the goal, higher the reward
+            # closer to the goal, less the penalty
             distance = abs(agent_x - finish_x) + abs(agent_y - finish_y)
             
+            # initialise negative state reward as proportional to distance to goal
             if distance != 0:
               reward = 0 - distance
             # amplify reward when reaching the goal
             else:
-              reward = 1000
+              reward = 1500
             
             # made effort in the right x-direction
             if (agent_x == finish_x):
               reward += 50
             elif (agent_x < prev_x):
-              reward += 10 * (prev_x - agent_x)
+              reward += 12 * (prev_x - agent_x)
               prev_x = agent_x
             else:
-              reward -= 10 * (agent_x - prev_x + 1)
+              reward -= 12 * (agent_x - prev_x + 1)
             
             # made effort in the right y-direction
             if (agent_y == finish_y):
               reward += 50
             elif (agent_y < prev_y):
-              reward += 10 * (prev_y - agent_y)
+              reward += 12 * (prev_y - agent_y)
               prev_y = agent_y
             else:
-              reward -= 10 * (agent_y - prev_y + 1)
+              reward -= 12 * (agent_y - prev_y + 1)
 
             # made effort in the right overall direction
             if (distance == 0):
               reward += 100
             elif (distance < prev_distance):
-              reward += 20 * (prev_distance - distance)
+              reward += 24 * (prev_distance - distance)
               prev_distance = distance
             else:
-              reward -= 20 * (distance - prev_distance + 1)
+              reward -= 24 * (distance - prev_distance + 1)
 
             # penalise for taking longer time
             reward -= time * 1
@@ -345,9 +354,9 @@ def train(model_class, env):
         
         # Train the model if memory is sufficient
         if len(memory) > min_buffer:
-            if np.mean(rewards[print_interval:]) < 0.1:
-                print('Bad initialization. Please restart the training.')
-                exit()
+            #if np.mean(rewards[print_interval:]) < 0.1:
+                #print('Bad initialization. Please restart the training.')
+                #exit()
             for i in range(train_steps):
                 loss = optimize(model, target, memory, optimizer)
                 losses.append(loss.item())
